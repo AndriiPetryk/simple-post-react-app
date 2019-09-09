@@ -2,20 +2,23 @@ import React from 'react';
 
 import './Input.css';
 
-const filePicker = props => (
-  <div className="input">
-    <label htmlFor={props.id}>{props.label}</label>
-    <input
-      className={[
-        !props.valid ? 'invalid' : 'valid',
-        props.touched ? 'touched' : 'untouched'
-      ].join(' ')}
-      type="file"
-      id={props.id}
-      onChange={e => props.onChange(props.id, e.target.value, e.target.files)}
-      onBlur={props.onBlur}
-    />
-  </div>
-);
+const filePicker = props => {
+  const { id, label, valid, touched, onBlur, onChange } = props;
+  return (
+    <div className="input">
+      <label htmlFor={id}>{label}</label>
+      <input
+        className={[
+          !valid ? 'invalid' : 'valid',
+          touched ? 'touched' : 'untouched',
+        ].join(' ')}
+        type="file"
+        id={id}
+        onChange={e => onChange(id, e.target.value, e.target.files)}
+        onBlur={onBlur}
+      />
+    </div>
+  );
+};
 
 export default filePicker;

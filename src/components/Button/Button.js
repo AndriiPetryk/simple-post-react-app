@@ -2,32 +2,41 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import './Button.css';
+import PropTypes from 'prop-types';
 
-const button = props =>
-  !props.link ? (
+const button = props => {
+  const {
+    link,
+    design,
+    mode,
+    onClick,
+    disabled,
+    loading,
+    type,
+    children,
+  } = props;
+  console.log('props', props);
+  return !link ? (
     <button
-      className={[
-        'button',
-        `button--${props.design}`,
-        `button--${props.mode}`
-      ].join(' ')}
-      onClick={props.onClick}
-      disabled={props.disabled || props.loading}
-      type={props.type}
+      className={['button', `button--${design}`, `button--${mode}`].join(' ')}
+      onClick={onClick}
+      disabled={disabled || loading}
+      type={type}
     >
-      {props.loading ? 'Loading...' : props.children}
+      {loading ? 'Loading...' : children}
     </button>
   ) : (
     <Link
-      className={[
-        'button',
-        `button--${props.design}`,
-        `button--${props.mode}`
-      ].join(' ')}
-      to={props.link}
+      className={['button', `button--${design}`, `button--${mode}`].join(' ')}
+      to={link}
     >
-      {props.children}
+      {children}
     </Link>
   );
+};
+
+button.propTypes = {
+  history: PropTypes.shape({}).isRequired,
+};
 
 export default button;

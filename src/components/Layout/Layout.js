@@ -1,7 +1,7 @@
 import React from 'react';
 import './Layout.css';
 
-const layout = ({header, mobileNav, children}) => (
+const layout = ({ header, mobileNav, children }) => (
   <>
     <header className="main-header">{header}</header>
     {mobileNav}

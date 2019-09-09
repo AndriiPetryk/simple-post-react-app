@@ -1,23 +1,28 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import Image from '../../../components/Image/Image';
 import './SinglePost.css';
 
 class SinglePost extends Component {
-  state = {
-    title: '',
-    author: '',
-    date: '',
-    image: '',
-    content: ''
-  };
+  constructor() {
+    super();
+    this.state = {
+      title: '',
+      author: '',
+      date: '',
+      image: '',
+      content: '',
+    };
+  }
 
   componentDidMount() {
-    const postId = this.props.match.params.postId;
+    const { match, token } = this.props;
+    const { postId } = match.params;
     fetch('http://localhost:8080/feed/post/' + postId, {
       headers: {
-        Authorization: 'Bearer ' + this.props.token
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then(res => {
         if (res.status !== 200) {
@@ -31,7 +36,7 @@ class SinglePost extends Component {
           author: resData.post.creator.name,
           image: 'http://localhost:8080/' + resData.post.imageUrl,
           date: new Date(resData.post.createdAt).toLocaleDateString('en-US'),
-          content: resData.post.content
+          content: resData.post.content,
         });
       })
       .catch(err => {
@@ -40,19 +45,25 @@ class SinglePost extends Component {
   }
 
   render() {
+    const { title, author, date, image, content } = this.state;
     return (
       <section className="single-post">
-        <h1>{this.state.title}</h1>
+        <h1>{title}</h1>
         <h2>
-          Created by {this.state.author} on {this.state.date}
+          Created by {author} on {date}
         </h2>
         <div className="single-post__image">
-          <Image contain imageUrl={this.state.image} />
+          <Image contain imageUrl={image} />
         </div>
-        <p>{this.state.content}</p>
+        <p>{content}</p>
       </section>
     );
   }
 }
+
+SinglePost.propTypes = {
+  match: PropTypes.shape({}).isRequired,
+  token: PropTypes.string.isRequired,
+};
 
 export default SinglePost;

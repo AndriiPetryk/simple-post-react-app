@@ -7,7 +7,7 @@ import NavigationItems from '../NavigationItems/NavigationItems';
 
 import './MainNavigation.css';
 
-const mainNavigation = ({onOpenMobileNav, isAuth, onLogout}) => (
+const mainNavigation = ({ onOpenMobileNav, isAuth, onLogout }) => (
   <nav className="main-nav">
     <MobileToggle onOpen={onOpenMobileNav} />
     <div className="main-nav__logo">
