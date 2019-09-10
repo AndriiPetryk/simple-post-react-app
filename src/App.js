@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Route, Switch, Redirect, withRouter } from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 
 // import { loginHandlerFetch } from './util/loginHandler';
 // import { sightUpHandlerFetch } from './util/signUpHandler';
@@ -257,4 +257,4 @@ App.propTypes = {
 
 App.defaultProps = {};
 
-export default withRouter(App);
+export default App;

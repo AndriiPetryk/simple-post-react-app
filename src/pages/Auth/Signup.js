@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import Input from '../../components/Form/Input/Input';
 import Button from '../../components/Button/Button';
 import { required, length, email } from '../../util/validators';
-// import { inputChangeHandler } from '../../util/handlers/inputChangeHandler';
 import Auth from './Auth';
 
 class Signup extends Component {
@@ -38,13 +37,13 @@ class Signup extends Component {
   inputChangeHandler = (input, value) => {
     this.setState(prevState => {
       let isValid = true;
-      for (const validator of prevState.loginForm[input].validators) {
+      for (const validator of prevState.signupForm[input].validators) {
         isValid = isValid && validator(value);
       }
       const updatedForm = {
-        ...prevState.loginForm,
+        ...prevState.signupForm,
         [input]: {
-          ...prevState.loginForm[input],
+          ...prevState.signupForm[input],
           valid: isValid,
           value: value,
         },
@@ -54,7 +53,7 @@ class Signup extends Component {
         formIsValid = formIsValid && updatedForm[inputName].valid;
       }
       return {
-        loginForm: updatedForm,
+        signupForm: updatedForm,
         formIsValid: formIsValid,
       };
     });
@@ -75,11 +74,21 @@ class Signup extends Component {
   };
 
   render() {
-    const { onSignup, loading } = this.props;
+    const { loading, onSignup } = this.props;
     const { signupForm } = this.state;
+    const {
+      email: { value: emailValue, valid: emailValid, touched: emailTouched },
+      name: { value: nameValue, valid: nameValid, touched: nameTouched },
+      password: {
+        value: passwordValue,
+        valid: passwordValid,
+        touched: passwordTouched,
+      },
+    } = signupForm;
+
     return (
       <Auth>
-        <form onSubmit={event => onSignup(event, this.state)}>
+        <form onSubmit={e => onSignup(e, this.state)}>
           <Input
             id="email"
             label="Your E-Mail"
@@ -87,9 +96,9 @@ class Signup extends Component {
             control="input"
             onChange={this.inputChangeHandler}
             onBlur={this.inputBlurHandler.bind(this, 'email')}
-            value={signupForm.email.value}
-            valid={signupForm.email.valid}
-            touched={signupForm.email.touched}
+            value={emailValue}
+            valid={emailValid}
+            touched={emailTouched}
           />
           <Input
             id="name"
@@ -98,9 +107,9 @@ class Signup extends Component {
             control="input"
             onChange={this.inputChangeHandler}
             onBlur={this.inputBlurHandler.bind(this, 'name')}
-            value={signupForm.name.value}
-            valid={signupForm.name.valid}
-            touched={signupForm.name.touched}
+            value={nameValue}
+            valid={nameValid}
+            touched={nameTouched}
           />
           <Input
             id="password"
@@ -109,9 +118,9 @@ class Signup extends Component {
             control="input"
             onChange={this.inputChangeHandler}
             onBlur={this.inputBlurHandler.bind(this, 'password')}
-            value={signupForm.password.value}
-            valid={signupForm.password.valid}
-            touched={signupForm.password.touched}
+            value={passwordValue}
+            valid={passwordValid}
+            touched={passwordTouched}
           />
           <Button design="raised" type="submit" loading={loading}>
             Signup
