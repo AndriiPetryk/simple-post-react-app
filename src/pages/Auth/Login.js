@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import Input from '../../components/Form/Input/Input';
 import Button from '../../components/Button/Button';
 import { required, length, email } from '../../util/validators';
-// import { inputChangeHandler } from '../../util/handlers/inputChangeHandler';
 import Auth from './Auth';
 
 class Login extends Component {
@@ -40,7 +39,7 @@ class Login extends Component {
         [input]: {
           ...prevState.loginForm[input],
           valid: isValid,
-          value: value,
+          value,
         },
       };
       let formIsValid = true;
@@ -49,12 +48,13 @@ class Login extends Component {
       }
       return {
         loginForm: updatedForm,
-        formIsValid: formIsValid,
+        formIsValid,
       };
     });
   };
 
   inputBlurHandler = input => {
+    console.log('input', input);
     this.setState(prevState => {
       return {
         loginForm: {

@@ -1,8 +1,19 @@
 import React from 'react';
+import Button from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 
 import './Button.css';
 import PropTypes from 'prop-types';
+
+const useStyles = makeStyles(theme => ({
+  button: {
+    margin: theme.spacing(1),
+  },
+  input: {
+    display: 'none',
+  },
+}));
 
 const button = props => {
   const {
@@ -15,16 +26,19 @@ const button = props => {
     type,
     children,
   } = props;
-  console.log('props', props);
+  const classes = useStyles();
   return !link ? (
-    <button
-      className={['button', `button--${design}`, `button--${mode}`].join(' ')}
+    <Button
+      // className={classes.button}
+      // className={['button', `button--${design}`, `button--${mode}`].join(' ')}
+      variant="contained"
+      color="primary"
       onClick={onClick}
       disabled={disabled || loading}
       type={type}
     >
       {loading ? 'Loading...' : children}
-    </button>
+    </Button>
   ) : (
     <Link
       className={['button', `button--${design}`, `button--${mode}`].join(' ')}

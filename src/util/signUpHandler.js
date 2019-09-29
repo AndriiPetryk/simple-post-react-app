@@ -1,5 +1,5 @@
 export const sightUpHandlerFetch = ({ authData }) => {
-  fetch('http://localhost:8080/auth/signup', {
+  fetch('http://localhost:5000/auth/signup', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

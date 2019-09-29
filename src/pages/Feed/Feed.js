@@ -28,7 +28,7 @@ class Feed extends Component {
 
   componentDidMount() {
     const { token } = this.props;
-    fetch('http://localhost:8080/auth/status', {
+    fetch('http://localhost:5000/auth/status', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -62,7 +62,7 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch('http://localhost:8080/feed/posts?page=' + page, {
+    fetch('http://localhost:5000/feed/posts?page=' + page, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -92,7 +92,7 @@ class Feed extends Component {
     const { token } = this.props;
     const { status } = this.state;
     event.preventDefault();
-    fetch('http://localhost:8080/auth/status', {
+    fetch('http://localhost:5000/auth/status', {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -143,11 +143,11 @@ class Feed extends Component {
     formData.append('title', postData.title);
     formData.append('content', postData.content);
     formData.append('image', postData.image);
-    let url = 'http://localhost:8080/feed/post';
+    let url = 'http://localhost:5000/feed/post';
     let method = 'POST';
     if (editPost) {
       // eslint-disable-next-line no-underscore-dangle
-      url = 'http://localhost:8080/feed/post/' + editPost._id;
+      url = 'http://localhost:5000/feed/post/' + editPost._id;
       method = 'PUT';
     }
 
@@ -211,7 +211,7 @@ class Feed extends Component {
   deletePostHandler = postId => {
     const { token } = this.props;
     this.setState({ postsLoading: true });
-    fetch('http://localhost:8080/feed/post/' + postId, {
+    fetch('http://localhost:5000/feed/post/' + postId, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,

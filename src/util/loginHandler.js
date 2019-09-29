@@ -2,7 +2,7 @@ import React from 'react';
 
 export const loginHandlerFetch = authData => {
   console.log(authData);
-  return fetch('http://localhost:8080/auth/login', {
+  return fetch('http://localhost:5000/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

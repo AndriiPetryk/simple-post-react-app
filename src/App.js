@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route, Switch, Redirect } from 'react-router-dom';
+import axios from 'axios';
 
 // import { loginHandlerFetch } from './util/loginHandler';
 // import { sightUpHandlerFetch } from './util/signUpHandler';
@@ -65,12 +66,13 @@ class App extends Component {
   loginHandler = (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
-    fetch('http://localhost:8080/auth/login', {
+    axios({
       method: 'POST',
+      url: 'http://localhost:5000/auth/login',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
+      data: JSON.stringify({
         email: authData.email,
         password: authData.password,
       }),
@@ -115,7 +117,7 @@ class App extends Component {
   signupHandler = (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
-    fetch('http://localhost:8080/auth/signup', {
+    fetch('http://localhost:5000/auth/signup', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
