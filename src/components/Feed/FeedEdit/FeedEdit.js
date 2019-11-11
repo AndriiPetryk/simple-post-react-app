@@ -40,27 +40,25 @@ class FeedEdit extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { editing, selectedPost } = this.props;
-    const { editing: prevEditing, selectedPost: prevSelectedProps } = prevProps;
     if (
-      editing &&
-      prevEditing !== editing &&
-      prevSelectedProps !== selectedPost
+      this.props.editing &&
+      prevProps.editing !== this.props.editing &&
+      prevProps.selectedPost !== this.props.selectedPost
     ) {
       const postForm = {
         title: {
           ...prevState.postForm.title,
-          value: selectedPost.title,
+          value: this.props.selectedPost.title,
           valid: true,
         },
         image: {
           ...prevState.postForm.image,
-          value: selectedPost.imagePath,
+          value: this.props.selectedPost.imagePath,
           valid: true,
         },
         content: {
           ...prevState.postForm.content,
-          value: selectedPost.content,
+          value: this.props.selectedPost.content,
           valid: true,
         },
       };
@@ -74,13 +72,12 @@ class FeedEdit extends Component {
         .then(b64 => {
           this.setState({ imagePreview: b64 });
         })
-        .catch(event => {
+        .catch(e => {
           this.setState({ imagePreview: null });
         });
     }
     this.setState(prevState => {
       let isValid = true;
-      // eslint-disable-next-line no-restricted-syntax
       for (const validator of prevState.postForm[input].validators) {
         isValid = isValid && validator(value);
       }
@@ -118,23 +115,20 @@ class FeedEdit extends Component {
   };
 
   cancelPostChangeHandler = () => {
-    const { onCancelEdit } = this.props;
     this.setState({
       postForm: POST_FORM,
       formIsValid: false,
     });
-    onCancelEdit();
+    this.props.onCancelEdit();
   };
 
   acceptPostChangeHandler = () => {
-    const { onFinishEdit } = this.props;
-    const { postForm } = this.state;
     const post = {
-      title: postForm.title.value,
-      image: postForm.image.value,
-      content: postForm.content.value,
+      title: this.state.postForm.title.value,
+      image: this.state.postForm.image.value,
+      content: this.state.postForm.content.value,
     };
-    onFinishEdit(post);
+    this.props.onFinishEdit(post);
     this.setState({
       postForm: POST_FORM,
       formIsValid: false,
@@ -143,41 +137,38 @@ class FeedEdit extends Component {
   };
 
   render() {
-    const { editing, loading } = this.props;
-    const { formIsValid, postForm, imagePreview } = this.state;
-    return editing ? (
+    return this.props.editing ? (
       <>
         <Backdrop onClick={this.cancelPostChangeHandler} />
         <Modal
           title="New Post"
-          acceptEnabled={formIsValid}
+          acceptEnabled={this.state.formIsValid}
           onCancelModal={this.cancelPostChangeHandler}
           onAcceptModal={this.acceptPostChangeHandler}
-          isLoading={loading}
-        >
+          isLoading={this.props.loading}>
           <form>
             <Input
               id="title"
               label="Title"
               control="input"
               onChange={this.postInputChangeHandler}
-              onBlur={this.inputBlurHandler}
-              valid={postForm.title.valid}
-              touched={postForm.title.touched}
-              value={postForm.title.value}
-            />
+              onBlur={this.inputBlurHandler.bind(this, 'title')}
+              valid={this.state.postForm.title.valid}
+              touched={this.state.postForm.title.touched}
+              value={this.state.postForm.title.value}/>
             <FilePicker
               id="image"
               label="Image"
               control="input"
               onChange={this.postInputChangeHandler}
-              onBlur={this.inputBlurHandler}
-              valid={postForm.image.valid}
-              touched={postForm.image.touched}
-            />
+              onBlur={this.inputBlurHandler.bind(this, 'image')}
+              valid={this.state.postForm.image.valid}
+              touched={this.state.postForm.image.touched}/>
             <div className="new-post__preview-image">
-              {!imagePreview && <p>Please choose an image.</p>}
-              {imagePreview && <Image imageUrl={imagePreview} contain left />}
+              {!this.state.imagePreview && <p>Please choose an image.</p>}
+              {this.state.imagePreview && (
+                <Image imageUrl={this.state.imagePreview} contain left />
+              )}
             </div>
             <Input
               id="content"
@@ -185,11 +176,10 @@ class FeedEdit extends Component {
               control="textarea"
               rows="5"
               onChange={this.postInputChangeHandler}
-              onBlur={this.inputBlurHandler}
-              valid={postForm.content.valid}
-              touched={postForm.content.touched}
-              value={postForm.content.value}
-            />
+              onBlur={this.inputBlurHandler.bind(this, 'content')}
+              valid={this.state.postForm.content.valid}
+              touched={this.state.postForm.content.touched}
+              value={this.state.postForm.content.value}/>
           </form>
         </Modal>
       </>

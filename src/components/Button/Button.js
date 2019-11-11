@@ -1,19 +1,8 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
-import { makeStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import './Button.css';
-import PropTypes from 'prop-types';
-
-const useStyles = makeStyles(theme => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-  input: {
-    display: 'none',
-  },
-}));
 
 const button = props => {
   const {
@@ -26,19 +15,15 @@ const button = props => {
     type,
     children,
   } = props;
-  const classes = useStyles();
   return !link ? (
-    <Button
-      // className={classes.button}
-      // className={['button', `button--${design}`, `button--${mode}`].join(' ')}
-      variant="contained"
-      color="primary"
+    <button
+      className={['button', `button--${design}`, `button--${mode}`].join(' ')}
       onClick={onClick}
       disabled={disabled || loading}
       type={type}
     >
       {loading ? 'Loading...' : children}
-    </Button>
+    </button>
   ) : (
     <Link
       className={['button', `button--${design}`, `button--${mode}`].join(' ')}
@@ -48,9 +33,15 @@ const button = props => {
     </Link>
   );
 };
-
 button.propTypes = {
-  history: PropTypes.shape({}).isRequired,
+  link: PropTypes.string.isRequired,
+  design: PropTypes.string.isRequired,
+  mode: PropTypes.string.isRequired,
+  disabled: PropTypes.bool.isRequired,
+  loading: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
+  type: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
 export default button;

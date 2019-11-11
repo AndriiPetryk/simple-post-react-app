@@ -1,4 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+
 import './Layout.css';
 
 const layout = ({ header, mobileNav, children }) => (
@@ -8,5 +10,11 @@ const layout = ({ header, mobileNav, children }) => (
     <main className="content">{children}</main>
   </>
 );
+
+layout.propTypes = {
+  header: PropTypes.node.isRequired,
+  mobileNav: PropTypes.node.isRequired,
+  children: PropTypes.node.isRequired,
+};
 
 export default layout;

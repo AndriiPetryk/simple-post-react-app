@@ -1,24 +1,23 @@
-import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-import { routerReducer } from 'react-router-redux';
-import rootReducer from './reducers/rootReducer';
-import { reducer as form } from 'redux-form';
-
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+import { createLogger } from 'redux-logger';
+// import todoApp from "./reducers";
 
 const configureStore = () => {
-  const middleware = [thunk];
+  const middlewares = [thunk];
 
-  const store = createStore(
-    combineReducers({
-      rootReducer,
-      form,
-      routing: routerReducer,
-    }),
-    composeEnhancers(applyMiddleware(...middleware)),
+  if (process.env.NODE_ENV !== 'production') {
+    middlewares.push(createLogger());
+  }
+
+  /* eslint-disable no-underscore-dangle */
+  return createStore(
+    // todoApp,
+    window.__REDUX_DEVTOOLS_EXTENSION__ &&
+      window.__REDUX_DEVTOOLS_EXTENSION__(),
+    applyMiddleware(...middlewares),
   );
-
-  return store;
+  /* eslint-enable */
 };
 
 export default configureStore;

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import Backdrop from '../Backdrop/Backdrop';
 import Modal from '../Modal/Modal';
@@ -18,5 +19,10 @@ const errorHandler = ({ onHandle, error }) => (
     )}
   </>
 );
+
+errorHandler.propTypes = {
+  onHandle: PropTypes.func.isRequired,
+  error: PropTypes.string.isRequired,
+};
 
 export default errorHandler;

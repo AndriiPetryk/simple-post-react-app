@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 
+import axios from 'axios';
 import Post from '../../components/Feed/Post/Post';
 import Button from '../../components/Button/Button';
 import FeedEdit from '../../components/Feed/FeedEdit/FeedEdit';
-import Input from '../../components/Form/Input/Input';
+// import Input from '../../components/Form/Input/Input';
 import Paginator from '../../components/Paginator/Paginator';
 import Loader from '../../components/Loader/Loader';
 import ErrorHandler from '../../components/ErrorHandler/ErrorHandler';
 import './Feed.css';
-import SinglePost from './SinglePost/SinglePost';
 
 class Feed extends Component {
   constructor() {
@@ -27,27 +26,29 @@ class Feed extends Component {
   }
 
   componentDidMount() {
-    const { token } = this.props;
-    fetch('http://localhost:5000/auth/status', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => {
-        if (res.status !== 200) {
-          throw new Error('Failed to fetch user status.');
-        }
-        return res.json();
-      })
-      .then(resData => {
-        this.setState({ status: resData.status });
-      })
-      .catch(this.catchError);
-
+    this.fetchUserStatus();
     this.loadPosts();
   }
 
-  loadPosts = direction => {
+  fetchUserStatus = async () => {
+    const { token } = this.props;
+    try {
+      const response = await axios('http://localhost:8081/auth/status', {
+        method: 'get',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch user status.');
+      }
+      this.setState({ status: response.status });
+    } catch (error) {
+      this.catchError();
+    }
+  };
+
+  loadPosts = async direction => {
     const { postPage } = this.state;
     const { token } = this.props;
     if (direction) {
@@ -55,63 +56,61 @@ class Feed extends Component {
     }
     let page = postPage;
     if (direction === 'next') {
+      // eslint-disable-next-line no-plusplus
       page++;
       this.setState({ postPage: page });
     }
     if (direction === 'previous') {
+      // eslint-disable-next-line no-plusplus
       page--;
       this.setState({ postPage: page });
     }
-    fetch('http://localhost:5000/feed/posts?page=' + page, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => {
-        if (res.status !== 200) {
-          throw new Error('Failed to fetch posts.');
-        }
-        return res.json();
-      })
-      .then(resData => {
-        this.setState({
-          posts: resData.posts.map(post => {
-            return {
-              ...post,
-              imagePath: post.imageUrl,
-            };
-          }),
-          totalPosts: resData.totalItems,
-          postsLoading: false,
-        });
-      })
-      .catch(this.catchError);
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8081/feed/posts?page=${page}`,
+        {
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+        },
+      );
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch posts.');
+      }
+      this.setState({
+        posts: response.data.posts.map(post => {
+          return {
+            ...post,
+            imagePath: post.imageUrl,
+          };
+        }),
+        totalPosts: response.data.totalItems,
+        postsLoading: false,
+      });
+    } catch (error) {
+      this.catchError();
+    }
   };
 
-  statusUpdateHandler = event => {
+  statusUpdateHandler = async event => {
     const { token } = this.props;
     const { status } = this.state;
     event.preventDefault();
-    fetch('http://localhost:5000/auth/status', {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    try {
+      const response = await axios.patch(`http://localhost:8081/auth/status`, {
         status,
-      }),
-    })
-      .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Can't update status!");
-        }
-        return res.json();
-      })
-      .then(resData => {
-        console.log(resData);
-      })
-      .catch(this.catchError);
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.status !== 200 && response.status !== 201) {
+        throw new Error("Can't update status!");
+      }
+    } catch (error) {
+      this.catchError();
+    }
   };
 
   newPostHandler = () => {
@@ -134,8 +133,6 @@ class Feed extends Component {
   };
 
   finishEditHandler = postData => {
-    const { token } = this.props;
-    const { editPost } = this.state;
     this.setState({
       editLoading: true,
     });
@@ -143,11 +140,10 @@ class Feed extends Component {
     formData.append('title', postData.title);
     formData.append('content', postData.content);
     formData.append('image', postData.image);
-    let url = 'http://localhost:5000/feed/post';
+    let url = 'http://localhost:8081/feed/post';
     let method = 'POST';
-    if (editPost) {
-      // eslint-disable-next-line no-underscore-dangle
-      url = 'http://localhost:5000/feed/post/' + editPost._id;
+    if (this.state.editPost) {
+      url = 'http://localhost:8081/feed/post/' + this.state.editPost._id;
       method = 'PUT';
     }
 
@@ -155,7 +151,7 @@ class Feed extends Component {
       method,
       body: formData,
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: 'Bearer ' + this.props.token,
       },
     })
       .then(res => {
@@ -167,7 +163,6 @@ class Feed extends Component {
       .then(resData => {
         console.log(resData);
         const post = {
-          // eslint-disable-next-line no-underscore-dangle
           _id: resData.post._id,
           title: resData.post.title,
           content: resData.post.content,
@@ -178,7 +173,6 @@ class Feed extends Component {
           let updatedPosts = [...prevState.posts];
           if (prevState.editPost) {
             const postIndex = prevState.posts.findIndex(
-              // eslint-disable-next-line no-underscore-dangle
               p => p._id === prevState.editPost._id,
             );
             updatedPosts[postIndex] = post;
@@ -209,12 +203,11 @@ class Feed extends Component {
   };
 
   deletePostHandler = postId => {
-    const { token } = this.props;
     this.setState({ postsLoading: true });
-    fetch('http://localhost:5000/feed/post/' + postId, {
+    fetch('http://localhost:8081/feed/post/' + postId, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: 'Bearer ' + this.props.token,
       },
     })
       .then(res => {
@@ -226,7 +219,6 @@ class Feed extends Component {
       .then(resData => {
         console.log(resData);
         this.setState(prevState => {
-          // eslint-disable-next-line no-underscore-dangle
           const updatedPosts = prevState.posts.filter(p => p._id !== postId);
           return { posts: updatedPosts, postsLoading: false };
         });
@@ -246,63 +238,50 @@ class Feed extends Component {
   };
 
   render() {
-    const {
-      error,
-      isEditing,
-      editPost,
-      editLoading,
-      postsLoading,
-      posts,
-      status,
-      totalPosts,
-      postPage,
-    } = this.state;
     return (
       <>
-        <ErrorHandler error={error} onHandle={this.errorHandler} />
+        <ErrorHandler error={this.state.error} onHandle={this.errorHandler} />
         <FeedEdit
-          editing={isEditing}
-          selectedPost={editPost}
-          loading={editLoading}
+          editing={this.state.isEditing}
+          selectedPost={this.state.editPost}
+          loading={this.state.editLoading}
           onCancelEdit={this.cancelEditHandler}
-          onFinishEdit={this.finishEditHandler}
-        />
-        <section className="feed__status">
-          <form onSubmit={this.statusUpdateHandler}>
-            <Input
-              type="text"
-              placeholder="Your status"
-              control="input"
-              onChange={this.statusInputChangeHandler}
-              value={status}
-            />
-            <Button mode="flat" type="submit">
-              Update
-            </Button>
-          </form>
-        </section>
+          onFinishEdit={this.finishEditHandler}/>
+        {/* <section className="feed__status"> */}
+        {/*  <form onSubmit={this.statusUpdateHandler}> */}
+        {/*    <Input */}
+        {/*      type="text" */}
+        {/*      placeholder="Your status" */}
+        {/*      control="input" */}
+        {/*      onChange={this.statusInputChangeHandler} */}
+        {/*      value={this.state.status} */}
+        {/*    /> */}
+        {/*    <Button mode="flat" type="submit"> */}
+        {/*      Update */}
+        {/*    </Button> */}
+        {/*  </form> */}
+        {/* </section> */}
         <section className="feed__control">
           <Button mode="raised" design="accent" onClick={this.newPostHandler}>
             New Post
           </Button>
         </section>
         <section className="feed">
-          {postsLoading && (
+          {this.state.postsLoading && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <Loader />
             </div>
           )}
-          {posts.length <= 0 && !postsLoading ? (
+          {this.state.posts.length <= 0 && !this.state.postsLoading ? (
             <p style={{ textAlign: 'center' }}>No posts found.</p>
           ) : null}
-          {!postsLoading && (
+          {!this.state.postsLoading && (
             <Paginator
-              onPrevious={this.loadPosts}
-              onNext={this.loadPosts}
-              lastPage={Math.ceil(totalPosts / 2)}
-              currentPage={postPage}
-            >
-              {posts.map(post => (
+              onPrevious={this.loadPosts.bind(this, 'previous')}
+              onNext={this.loadPosts.bind(this, 'next')}
+              lastPage={Math.ceil(this.state.totalPosts / 2)}
+              currentPage={this.state.postPage}>
+              {this.state.posts.map(post => (
                 <Post
                   key={post._id}
                   id={post._id}
@@ -311,9 +290,8 @@ class Feed extends Component {
                   title={post.title}
                   image={post.imageUrl}
                   content={post.content}
-                  onStartEdit={this.startEditPostHandler}
-                  onDelete={this.deletePostHandler}
-                />
+                  onStartEdit={this.startEditPostHandler.bind(this, post._id)}
+                  onDelete={this.deletePostHandler.bind(this, post._id)}/>
               ))}
             </Paginator>
           )}
@@ -323,7 +301,4 @@ class Feed extends Component {
   }
 }
 
-Feed.propTypes = {
-  token: PropTypes.string.isRequired,
-};
 export default Feed;

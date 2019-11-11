@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { Route, Switch, Redirect } from 'react-router-dom';
+import { Route, Switch, Redirect, withRouter } from 'react-router-dom';
 import axios from 'axios';
 
-// import { loginHandlerFetch } from './util/loginHandler';
-// import { sightUpHandlerFetch } from './util/signUpHandler';
 import Layout from './components/Layout/Layout';
 import Backdrop from './components/Backdrop/Backdrop';
 import Toolbar from './components/Toolbar/Toolbar';
@@ -63,98 +60,72 @@ class App extends Component {
     localStorage.removeItem('userId');
   };
 
-  loginHandler = (event, authData) => {
+  loginHandler = async (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
-    axios({
-      method: 'POST',
-      url: 'http://localhost:5000/auth/login',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: JSON.stringify({
+    try {
+      const res = await axios.post('http://localhost:8081/auth/login', {
         email: authData.email,
         password: authData.password,
-      }),
-    })
-      .then(res => {
-        if (res.status === 422) {
-          throw new Error('Validation failed.');
-        }
-        if (res.status !== 200 && res.status !== 201) {
-          console.log('Error!');
-          throw new Error('Could not authenticate you!');
-        }
-        return res.json();
-      })
-      .then(resData => {
-        console.log(resData);
-        this.setState({
-          isAuth: true,
-          token: resData.token,
-          authLoading: false,
-          userId: resData.userId,
-        });
-        localStorage.setItem('token', resData.token);
-        localStorage.setItem('userId', resData.userId);
-        const remainingMilliseconds = 60 * 60 * 1000;
-        const expiryDate = new Date(
-          new Date().getTime() + remainingMilliseconds,
-        );
-        localStorage.setItem('expiryDate', expiryDate.toISOString());
-        this.setAutoLogout(remainingMilliseconds);
-      })
-      .catch(err => {
-        console.log(err);
-        this.setState({
-          isAuth: false,
-          authLoading: false,
-          error: err,
-        });
       });
+      if (res.status === 422) {
+        throw new Error('Validation failed.');
+      }
+      if (res.status !== 200 && res.status !== 201) {
+        console.log('Error!');
+        throw new Error('Could not authenticate you!');
+      }
+      this.setState({
+        isAuth: true,
+        token: res.data.token,
+        authLoading: false,
+        userId: res.data.userId,
+      });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('userId', res.data.userId);
+      const remainingMilliseconds = 60 * 60 * 1000;
+      const expiryDate = new Date(new Date().getTime() + remainingMilliseconds);
+      localStorage.setItem('expiryDate', expiryDate.toISOString());
+      this.setAutoLogout(remainingMilliseconds);
+    } catch (error) {
+      console.log(error);
+      this.setState({
+        isAuth: false,
+        authLoading: false,
+        error,
+      });
+    }
   };
 
-  signupHandler = (event, authData) => {
+  signupHandler = async (event, authData) => {
     event.preventDefault();
+    const { history } = this.props;
     this.setState({ authLoading: true });
-    fetch('http://localhost:5000/auth/signup', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    try {
+      const res = await axios.put('http://localhost:8081/auth/signup', {
         email: authData.signupForm.email.value,
         password: authData.signupForm.password.value,
         name: authData.signupForm.name.value,
-      }),
-    })
-      .then(res => {
-        if (res.status === 422) {
-          throw new Error(
-            "Validation failed. Make sure the email address isn't used yet!",
-          );
-        }
-        if (res.status !== 200 && res.status !== 201) {
-          console.log('Error!');
-          throw new Error('Creating a user failed!');
-        }
-        return res.json();
-      })
-      .then(resData => {
-        console.log(resData);
-        const { history } = this.props;
-        this.setState({ isAuth: false, authLoading: false });
-        // eslint-disable-next-line react/prop-types
-        history.replace('/');
-      })
-      .catch(err => {
-        console.log(err);
-        this.setState({
-          isAuth: false,
-          authLoading: false,
-          error: err,
-        });
       });
+      if (res.status === 422) {
+        throw new Error(
+          "Validation failed. Make sure the email address isn't used yet!",
+        );
+      }
+      if (res.status !== 200 && res.status !== 201) {
+        console.log('Error!');
+        throw new Error('Creating a user failed!');
+      }
+      this.setState({ isAuth: false, authLoading: false });
+      history.replace('/');
+    } catch (error) {
+      console.log(error);
+      this.setState({
+        isAuth: false,
+        authLoading: false,
+        error,
+      });
+    }
   };
 
   setAutoLogout = milliseconds => {
@@ -168,15 +139,6 @@ class App extends Component {
   };
 
   render() {
-    const {
-      authLoading,
-      showMobileNav,
-      showBackdrop,
-      isAuth,
-      userId,
-      token,
-      error,
-    } = this.state;
     let routes = (
       <Switch>
         <Route
@@ -186,7 +148,7 @@ class App extends Component {
             <LoginPage
               {...props}
               onLogin={this.loginHandler}
-              loading={authLoading}
+              loading={this.state.authLoading}
             />
           )}
         />
@@ -197,26 +159,31 @@ class App extends Component {
             <SignupPage
               {...props}
               onSignup={this.signupHandler}
-              loading={authLoading}
+              loading={this.state.authLoading}
             />
           )}
         />
         <Redirect to="/" />
       </Switch>
     );
-    if (isAuth) {
+    if (this.state.isAuth) {
       routes = (
         <Switch>
           <Route
             path="/"
             exact
-            render={() => <FeedPage userId={userId} token={token} />}
+            render={() => (
+              <FeedPage userId={this.state.userId} token={this.state.token} />
+            )}
           />
           <Route
             path="/:postId"
             render={props => (
-              // eslint-disable-next-line react/jsx-props-no-spreading
-              <SinglePostPage {...props} userId={userId} token={token} />
+              <SinglePostPage
+                {...props}
+                userId={this.state.userId}
+                token={this.state.token}
+              />
             )}
           />
           <Redirect to="/" />
@@ -225,25 +192,27 @@ class App extends Component {
     }
     return (
       <>
-        {showBackdrop && <Backdrop onClick={this.backdropClickHandler} />}
-        <ErrorHandler error={error} onHandle={this.errorHandler} />
+        {this.state.showBackdrop && (
+          <Backdrop onClick={this.backdropClickHandler} />
+        )}
+        <ErrorHandler error={this.state.error} onHandle={this.errorHandler} />
         <Layout
           header={
             <Toolbar>
               <MainNavigation
-                onOpenMobileNav={this.mobileNavHandler}
+                onOpenMobileNav={this.mobileNavHandler.bind(this, true)}
                 onLogout={this.logoutHandler}
-                isAuth={isAuth}
+                isAuth={this.state.isAuth}
               />
             </Toolbar>
           }
           mobileNav={
             <MobileNavigation
-              open={showMobileNav}
+              open={this.state.showMobileNav}
               mobile
-              onChooseItem={this.mobileNavHandler}
+              onChooseItem={this.mobileNavHandler.bind(this, false)}
               onLogout={this.logoutHandler}
-              isAuth={isAuth}
+              isAuth={this.state.isAuth}
             />
           }
         />
@@ -253,10 +222,4 @@ class App extends Component {
   }
 }
 
-App.propTypes = {
-  history: PropTypes.shape({}).isRequired,
-};
-
-App.defaultProps = {};
-
-export default App;
+export default withRouter(App);

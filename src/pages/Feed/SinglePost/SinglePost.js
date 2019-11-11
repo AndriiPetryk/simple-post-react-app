@@ -17,11 +17,15 @@ class SinglePost extends Component {
   }
 
   componentDidMount() {
-    const { match, token } = this.props;
-    const { postId } = match.params;
-    fetch('http://localhost:5000/feed/post/' + postId, {
+    const {
+      match: {
+        params: { postId },
+      },
+      token,
+    } = this.props;
+    fetch('http://localhost:8081/feed/post/' + postId, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: 'Bearer ' + token,
       },
     })
       .then(res => {
@@ -34,7 +38,7 @@ class SinglePost extends Component {
         this.setState({
           title: resData.post.title,
           author: resData.post.creator.name,
-          image: 'http://localhost:5000/' + resData.post.imageUrl,
+          image: 'http://localhost:8081/' + resData.post.imageUrl,
           date: new Date(resData.post.createdAt).toLocaleDateString('en-US'),
           content: resData.post.content,
         });
@@ -53,7 +57,8 @@ class SinglePost extends Component {
           Created by {author} on {date}
         </h2>
         <div className="single-post__image">
-          <Image contain imageUrl={image} />
+          {/* eslint-disable-next-line react/jsx-no-duplicate-props */}
+          <Image contain imageUrl={image} contain />
         </div>
         <p>{content}</p>
       </section>

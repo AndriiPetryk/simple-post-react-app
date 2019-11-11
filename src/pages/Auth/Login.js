@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
 import Input from '../../components/Form/Input/Input';
 import Button from '../../components/Button/Button';
 import { required, length, email } from '../../util/validators';
@@ -54,7 +53,6 @@ class Login extends Component {
   };
 
   inputBlurHandler = input => {
-    console.log('input', input);
     this.setState(prevState => {
       return {
         loginForm: {
@@ -71,14 +69,13 @@ class Login extends Component {
   render() {
     const { onLogin, loading } = this.props;
     const { loginForm } = this.state;
-    const { email, password } = loginForm;
     return (
       <Auth>
         <form
-          onSubmit={event =>
-            onLogin(event, {
-              email: email.value,
-              password: password.value,
+          onSubmit={e =>
+            onLogin(e, {
+              email: loginForm.email.value,
+              password: loginForm.password.value,
             })
           }
         >
@@ -114,8 +111,8 @@ class Login extends Component {
 }
 
 Login.propTypes = {
-  loading: PropTypes.node.isRequired,
   onLogin: PropTypes.func.isRequired,
+  loading: PropTypes.func.isRequired,
 };
 
 export default Login;

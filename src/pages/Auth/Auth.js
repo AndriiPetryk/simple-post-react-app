@@ -11,5 +11,4 @@ const auth = props => {
 auth.propTypes = {
   children: PropTypes.node.isRequired,
 };
-
 export default auth;
